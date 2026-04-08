@@ -150,6 +150,35 @@ class Message:
                 return False
         return True
 
+    def __or__(self, other):
+        kind = self._kind
+        if isinstance(other, Value) and other._kind != kind:
+            return False
+        match kind:
+            case 'struct_value' | 'Struct':
+                if not isinstance(other, (Value, dict)):
+                    return NotImplemented
+                result = dict(other)
+                for key, value in self:
+                    result[key] = value
+                return result
+        return NotImplemented
+
+    def __ror__(self, other):
+        return self.__or__(other)
+
+    def __ior__(self, other):
+        kind = self._kind
+        match kind:
+            case 'struct_value' | 'Struct':
+                if not isinstance(other, (Value, dict)):
+                    return NotImplemented
+                items = other.items() if isinstance(other, dict) else iter(other)
+                for key, value in items:
+                    self[key] = value
+                return self
+        return NotImplemented
+
     def __str__(self):
         return format(self)
 
