@@ -158,7 +158,8 @@ class Message:
             case 'struct_value' | 'Struct':
                 if not isinstance(other, (Value, dict)):
                     return NotImplemented
-                result = dict(other)
+                for key, value in other:
+                    result[key] = value
                 for key, value in self:
                     result[key] = value
                 return result
