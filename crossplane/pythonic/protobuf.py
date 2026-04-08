@@ -152,33 +152,42 @@ class Message:
 
     def __or__(self, other):
         kind = self._kind
-        if isinstance(other, Value) and other._kind != kind:
-            return False
-        match kind:
-            case 'struct_value' | 'Struct':
-                if not isinstance(other, (Value, dict)):
-                    return NotImplemented
-                for key, value in other:
-                    result[key] = value
-                for key, value in self:
-                    result[key] = value
-                return result
-        return NotImplemented
+        if kind not in ('struct_value', 'Struct'):
+            return NotImplemented
+        if not isinstance(other, (Value, dict)):
+            return NotImplemented
+        result = Map()
+        for key, value in self:
+            result[key] = value
+        items = other.items() if isinstance(other, dict) else iter(other)
+        for key, value in items:
+            result[key] = value
+        return result
 
     def __ror__(self, other):
-        return self.__or__(other)
+        if not isinstance(other, dict):
+            return NotImplemented
+        result = Map()
+        for key, value in other.items():
+            result[key] = value
+        if self._kind not in ('struct_value', 'Struct'):
+            return NotImplemented
+        for key, value in self:
+            result[key] = value
+        return result
 
     def __ior__(self, other):
         kind = self._kind
-        match kind:
-            case 'struct_value' | 'Struct':
-                if not isinstance(other, (Value, dict)):
-                    return NotImplemented
-                items = other.items() if isinstance(other, dict) else iter(other)
-                for key, value in items:
-                    self[key] = value
-                return self
-        return NotImplemented
+        if kind not in ('struct_value', 'Struct'):
+            return NotImplemented
+        if not isinstance(other, (Value, dict)):
+            return NotImplemented
+        if self._readOnly:
+            return self | other
+        items = other.items() if isinstance(other, dict) else iter(other)
+        for key, value in items:
+            self[key] = value
+        return self
 
     def __str__(self):
         return format(self)
