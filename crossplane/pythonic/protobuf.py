@@ -150,45 +150,6 @@ class Message:
                 return False
         return True
 
-    def __or__(self, other):
-        kind = self._kind
-        if kind not in ('struct_value', 'Struct'):
-            return NotImplemented
-        if not isinstance(other, (Value, dict)):
-            return NotImplemented
-        result = Map()
-        for key, value in self:
-            result[key] = value
-        items = other.items() if isinstance(other, dict) else iter(other)
-        for key, value in items:
-            result[key] = value
-        return result
-
-    def __ror__(self, other):
-        if not isinstance(other, dict):
-            return NotImplemented
-        result = Map()
-        for key, value in other.items():
-            result[key] = value
-        if self._kind not in ('struct_value', 'Struct'):
-            return NotImplemented
-        for key, value in self:
-            result[key] = value
-        return result
-
-    def __ior__(self, other):
-        kind = self._kind
-        if kind not in ('struct_value', 'Struct'):
-            return NotImplemented
-        if not isinstance(other, (Value, dict)):
-            return NotImplemented
-        if self._readOnly:
-            return self | other
-        items = other.items() if isinstance(other, dict) else iter(other)
-        for key, value in items:
-            self[key] = value
-        return self
-
     def __str__(self):
         return format(self)
 
@@ -935,6 +896,32 @@ class Value:
                     return self._value.bool_value == other
                 return False
         return False
+
+    def __or__(self, other):
+        kind = self._kind
+        if kind not in ('struct_value', 'Struct'):
+            return NotImplemented
+        if not isinstance(other, (Value, dict)):
+            return NotImplemented
+        result = Map()
+        for key, value in self:
+            result[key] = value
+        items = other.items() if isinstance(other, dict) else iter(other)
+        for key, value in items:
+            result[key] = value
+        return result
+
+    def __ror__(self, other):
+        if not isinstance(other, dict):
+            return NotImplemented
+        result = Map()
+        for key, value in other.items():
+            result[key] = value
+        if self._kind not in ('struct_value', 'Struct'):
+            return NotImplemented
+        for key, value in self:
+            result[key] = value
+        return result
 
     def __str__(self):
         return format(self, '')
